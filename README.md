@@ -13,9 +13,12 @@ DevTree es un servidor backend construido con Express.js y TypeScript que permit
 - **TypeScript** - Tipado estático
 - **MongoDB** - Base de datos NoSQL
 - **Mongoose** - ODM para MongoDB
+- **express-validator** - Validación de datos
+- **bcrypt** - Encriptación de contraseñas
+- **slug** - Generación de slugs para handles
 - **dotenv** - Variables de entorno
-- **tsx** - Ejecutor de TypeScript con hot-reload
-- **ES Modules** - Sistema de módulos moderno
+- **tsx** - Ejecutor de TypeScript
+- **nodemon** - Hot-reload en desarrollo
 
 ## 📦 Requisitos Previos
 
@@ -65,11 +68,11 @@ El servidor estará disponible en `http://localhost:8000/api`
 
 ## 🌐 Endpoints API
 
-| Método | Ruta            | Descripción     |
-| ------ | --------------- | --------------- |
-| GET    | `/api`          | Hello World     |
-| GET    | `/api/nosotros` | Página Nosotros |
-| GET    | `/api/blog`     | Página Blog     |
+### Autenticación
+
+| Método | Ruta                 | Descripción       | Body                                |
+| ------ | -------------------- | ----------------- | ----------------------------------- |
+| POST   | `/api/auth/register` | Registrar usuario | `{ handle, name, email, password }` |
 
 ## 📁 Estructura del Proyecto
 
@@ -77,23 +80,56 @@ El servidor estará disponible en `http://localhost:8000/api`
 devtree/
 ├── src/
 │   ├── db/
-│   │   └── db.ts     # Conexión a MongoDB
-│   ├── index.ts      # Punto de entrada - Configuración del servidor
-│   ├── server.ts     # Configuración de Express y middlewares
-│   └── router.ts     # Definición de rutas API
-├── dist/             # Código compilado (generado)
-├── .env              # Variables de entorno (no incluido en git)
-├── tsconfig.json     # Configuración de TypeScript
-├── package.json      # Configuración y dependencias
-└── README.md         # Documentación
+│   │   └── db.ts           # Conexión a MongoDB
+│   ├── models/
+│   │   └── User.ts         # Modelo de usuario (Mongoose)
+│   ├── handlers/
+│   │   └── index.ts        # Controladores / Lógica de negocio
+│   ├── utils/
+│   │   └── auth.ts         # Utilidades de autenticación (bcrypt)
+│   ├── router.ts           # Rutas + Validaciones (express-validator)
+│   ├── server.ts           # Configuración de Express y middlewares
+│   └── index.ts            # Punto de entrada del servidor
+├── dist/                   # Código compilado (generado)
+├── .env                    # Variables de entorno (no incluido en git)
+├── tsconfig.json           # Configuración de TypeScript
+├── package.json            # Configuración y dependencias
+└── README.md               # Documentación
 ```
+
+## 🔄 Arquitectura y Flujo de Datos
+
+```
+Router → Validations → Handler/Controller → Model → Database
+```
+
+### Responsabilidades por capa:
+
+| Capa           | Responsabilidad                          | Ejemplo                                          |
+| -------------- | ---------------------------------------- | ------------------------------------------------ |
+| **Router**     | Definir rutas + aplicar validaciones     | `router.post('/register', validations, handler)` |
+| **Validators** | Reglas de validación (express-validator) | `body('email').isEmail()`                        |
+| **Handlers**   | Lógica de negocio                        | `await User.save()`                              |
+| **Models**     | Esquema de datos (Mongoose)              | `new Schema({...})`                              |
+| **Utils**      | Funciones auxiliares reutilizables       | `hashPassword()`                                 |
 
 ## ⚙️ Variables de Entorno
 
 | Variable      | Descripción                    | Ejemplo                             |
 | ------------- | ------------------------------ | ----------------------------------- |
 | `MONGODB_URI` | URI de conexión a MongoDB      | `mongodb://localhost:27017/devtree` |
-| `PORT`        | Puerto del servidor (opcional) | `4000`                              |
+| `PORT`        | Puerto del servidor (opcional) | `8000`                              |
+
+## 🔐 Modelo de Usuario
+
+```typescript
+interface IUser {
+  handle: string; // Username único (slug)
+  name: string; // Nombre completo
+  email: string; // Email único
+  password: string; // Contraseña hasheada (bcrypt)
+}
+```
 
 ## 🔜 Próximas Funcionalidades
 
@@ -102,9 +138,11 @@ devtree/
 - [x] Sistema de rutas (Router)
 - [x] Conexión a base de datos (MongoDB)
 - [x] Variables de entorno
-- [ ] Sistema de autenticación
+- [x] Modelo de usuario
+- [x] Validación de datos (express-validator)
+- [x] Encriptación de contraseñas (bcrypt)
+- [ ] Login y autenticación JWT
 - [ ] API REST para gestión de enlaces
-- [ ] Validación de datos
 - [ ] Tests unitarios e integración
 
 ## 👤 Autor
